@@ -27,13 +27,10 @@ char *get_next_line(int fd)
 		line = join(rem, buf);
 	while ((ret = read(fd, buf, BUFFER_SIZE)) > 0 || *rem)
 	{
-		
 		line = join(line, buf);
-		
 		if (ft_strchr(buf, 10))
 			rem = ft_strchr(buf, 10) + 1;
 		int i = 0;
-		// int position = endl_p(line);
  		while (*line && ft_strchr(line, 10))
 		{
 			if (line[i] == 10)
