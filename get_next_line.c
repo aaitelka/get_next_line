@@ -6,35 +6,47 @@
 /*   By: aaitelka <aaitelka@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/23 10:02:52 by aaitelka          #+#    #+#             */
-/*   Updated: 2023/12/23 11:29:40 by aaitelka         ###   ########.fr       */
+/*   Updated: 2024/01/02 10:36:49 by aaitelka         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 #include <stdio.h>
 
-char	*get_next_line(int fd)
+char *get_next_line(int fd)
 {
-	static char	*line;
-	char		*buffer;
-	size_t		endl_p;
-	
-	buffer = malloc(BUFFER_SIZE);
-	int i = 0;
-	while (read(fd, buffer, BUFFER_SIZE))
+	static char *rem;
+	char *line = "";
+ 	int hasendl = 0;
+	char *buf = (char *)malloc(sizeof(char) * BUFFER_SIZE);
+
+	if (fd < 0 || BUFFER_SIZE <= 0 || read(fd, NULL, 0) < 0)
+		return (free(buf), NULL);
+	int ret;
+	if (rem)
+		line = join(rem, buf);
+	while ((ret = read(fd, buf, BUFFER_SIZE)) > 0 || *rem)
 	{
-		endl_p = endl(buffer);
-		line = malloc(endl_p);
 		
-		if (endl_p)
-		{	
-			while (buffer[i] && endl_p--)
+		line = join(line, buf);
+		
+		if (ft_strchr(buf, 10))
+			rem = ft_strchr(buf, 10) + 1;
+		int i = 0;
+		// int position = endl_p(line);
+ 		while (*line && ft_strchr(line, 10))
+		{
+			if (line[i] == 10)
 			{
-				line[i] = buffer[i];
-				i++;	
+				line[i + 1] = '\0'; // add null terminator after endl.
+				hasendl = 1;
+				break;	
 			}
-			line[i] = '\0';
+			i++;
 		}
+		if (hasendl)
+			break;
 	}
+	free(buf);
 	return (line);
 }
