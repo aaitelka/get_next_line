@@ -6,148 +6,80 @@
 /*   By: aaitelka <aaitelka@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/23 10:02:52 by aaitelka          #+#    #+#             */
-/*   Updated: 2024/01/03 13:12:21 by aaitelka         ###   ########.fr       */
+/*   Updated: 2024/01/04 15:44:45 by aaitelka         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
-#include <stdio.h>
+#include <string.h>
 
-size_t  endl_index(const char *s)
+size_t	endl_index(const char *s)
 {
-	size_t  p;
+	size_t	p;
 
 	p = 0;
 	while (s[p])
 	{
 		if (s[p] == '\n')
-			break;
+			break ;
 		p++;
 	}
-	return (p);
+	return (p + 1);
 }
 
-char *get_next_line(int fd)
+char	*read_line(char *buf)
 {
-    static char *rem;
-    char *line = "";
-    int hasendl = 0;
-    ssize_t ret;
-    char *buf = (char *)malloc(sizeof(char) * BUFFER_SIZE);
+	size_t	len;
+	char	*line;
 
-    if (fd < 0 || read(fd, NULL, 0) < 1 || BUFFER_SIZE <= 0)
+	if (!buf)
+		return (NULL);
+	len = endl_index(buf);
+	if (len == 0)
+		return (NULL);
+	line = (char *) malloc(sizeof(char) * (len + 1));
+	line[len] = '\0';
+	if (line)
+	{
+		while (len--)
+			line[len] = buf[len];
+	}
+	return (line);
+}
+
+char	*get_next_line(int fd)
+{
+    static char	*rem;
+    char    	*line;
+    char		*buf;
+    ssize_t		ret;
+
+    line = "";
+    buf = (char *) malloc(sizeof(char) * BUFFER_SIZE);
+    if (fd < 0 || read(fd, NULL, 0) < 0 || BUFFER_SIZE <= 0)
         return (free(buf), NULL);
     if (rem)
         line = rem;
-    while ((ret = read(fd, buf, BUFFER_SIZE)) > 0 || *line) {
-        if (!ret && !ft_strchr(line, '\n'))
+    ret = read(fd, buf, BUFFER_SIZE);
+    while (*buf || *line)
+    {
+        if ((!ret && !ft_strchr(line, '\n')))
         {
             rem = NULL;
-            break;
+            free(buf);
+            break ;
         }
-        char *endl_c = ft_strchr(buf, '\n') ?: ft_strchr(line, '\n');
-        if (endl_c)
-            rem = endl_c + 1;
+        buf[ret] = '\0';
+        if (ft_strchr(buf, '\n'))
+            rem = ft_strchr(buf, '\n') + 1;
+        else
+            rem = ft_strchr(line, '\n') + 1;
         line = join(line, buf);
-        if (ft_strchr(line, '\n')) {
-            line[endl_index(line) + 1] = '\0';
-            hasendl = 1;
-        }
-        if (hasendl || ft_strlen(buf) < BUFFER_SIZE)
-            break;
+        if (ft_strchr(line, '\n'))
+            break ;
+        ret = read(fd, buf, BUFFER_SIZE);
     }
-    return (line);
+    char *realine = read_line(line);
+    free(line);
+    return (realine);
 }
-
-//char *get_next_line(int fd)
-//{
-//    static char *rem;
-//    char *line = "";
-//    int hasendl = 0;
-//    ssize_t ret;
-//    char *buf = (char *)malloc(sizeof(char) * BUFFER_SIZE);
-//
-//    if (fd < 0 || read(fd, NULL, 0) < 0 || BUFFER_SIZE <= 0)
-//        return (free(buf), NULL);
-//    if (rem)
-//        line = rem;
-//    while ((ret = read(fd, buf, BUFFER_SIZE)) > 0 || *line) {
-//        if (ret == 0 && !ft_strchr(line, '\n'))
-//        {
-//            rem = NULL;
-//            break;
-//        }
-//        char *endl_c = ft_strchr(buf, '\n') ?: ft_strchr(line, '\n');
-//        if (endl_c)
-//            rem = endl_c + 1;
-//
-//        line = join(line, buf);
-//        if (ft_strchr(line, '\n')) {
-//            line[endl_index(line) + 1] = '\0';
-//            hasendl = 1;
-//        }
-//        if (hasendl || ft_strlen(buf) < BUFFER_SIZE)
-//            break;
-//    }
-//    return (line);
-//}
-//char *get_next_line(int fd)
-//{
-//    static char *rem = "";
-//    char *line;
-//    int hasendl = 0;
-//    ssize_t ret;
-//    char *buf = (char *)malloc(sizeof(char) * BUFFER_SIZE);
-//
-//    if (fd < 0 || read(fd, NULL, 0) < 0 || BUFFER_SIZE <= 0)
-//        return (NULL);
-//    if (rem)
-//        line = rem;
-//    while ((ret = read(fd, buf, BUFFER_SIZE)) > 0 || *line) {
-//        if (ret == 0 && !ft_strchr(line, '\n'))
-//            break;
-//        char *endl_c = ft_strchr(buf, '\n') ?: ft_strchr(line, '\n');
-//        if (endl_c)
-//            rem = endl_c + 1;
-//
-//        line = join(line, buf);
-//        if (ft_strchr(line, '\n')) {
-//            line[endl_index(line) + 1] = '\0';
-//            hasendl = 1;
-//        }
-//        if (hasendl || ft_strlen(buf) < BUFFER_SIZE)
-//            break;
-//    }
-//    return (line);
-//}
-//char *get_next_line(int fd)
-//{
-//	static char *rem = "";
-//	char *line;
-//	int hasendl = 0;
-//	ssize_t ret;
-//	char *buf = (char *)malloc(sizeof(char) * BUFFER_SIZE);
-//
-//    if (fd >= 0 && read(fd, NULL, 0) >= 1 && BUFFER_SIZE >= 1) {
-//        if (rem)
-//            line = rem;
-//        while ((ret = read(fd, buf, BUFFER_SIZE)) > 0 || *line) {
-//            if (ret == 0)
-//                break;
-//            char *endl_c = ft_strchr(buf, '\n');
-//
-//            line = join(line, buf);
-//            if (endl_c)
-//                rem = endl_c + 1;
-//            if (ft_strchr(line, '\n')) {
-//                line[endl_index(line) + 1] = '\0';
-//                hasendl = 1;
-//            }
-//            if (hasendl || ft_strlen(buf) < BUFFER_SIZE)
-//                break;
-//        }
-//        return (line);
-//    }
-//    return (free(buf), NULL);
-//}
-
