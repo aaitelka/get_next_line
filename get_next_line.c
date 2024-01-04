@@ -44,7 +44,7 @@ char	*read_line(char *buf)
 		while (len--)
 			line[len] = buf[len];
 	}
-	return (line);
+	return (free(buf), NULL ?: line);
 }
 
 char	*get_next_line(int fd)
@@ -55,7 +55,7 @@ char	*get_next_line(int fd)
     ssize_t		ret;
 
     line = "";
-    buf = (char *) malloc(sizeof(char) * BUFFER_SIZE);
+    buf = (char *) malloc(sizeof(char) * (BUFFER_SIZE + 1));
     if (fd < 0 || read(fd, NULL, 0) < 0 || BUFFER_SIZE <= 0)
         return (free(buf), NULL);
     if (rem)
@@ -63,13 +63,13 @@ char	*get_next_line(int fd)
     ret = read(fd, buf, BUFFER_SIZE);
     while (*buf || *line)
     {
+        buf[ret] = '\0';
         if ((!ret && !ft_strchr(line, '\n')))
         {
             rem = NULL;
             free(buf);
             break ;
         }
-        buf[ret] = '\0';
         if (ft_strchr(buf, '\n'))
             rem = ft_strchr(buf, '\n') + 1;
         else
@@ -79,7 +79,5 @@ char	*get_next_line(int fd)
             break ;
         ret = read(fd, buf, BUFFER_SIZE);
     }
-    char *realine = read_line(line);
-    free(line);
-    return (realine);
+    return (read_line(line));
 }
