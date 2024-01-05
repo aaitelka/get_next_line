@@ -13,71 +13,67 @@
 #include "get_next_line.h"
 #include <string.h>
 
-size_t	endl_index(const char *s)
-{
-	size_t	p;
+size_t endl_index(const char *s) {
+    size_t p;
 
-	p = 0;
-	while (s[p])
-	{
-		if (s[p] == '\n')
-			break ;
-		p++;
-	}
-	return (p + 1);
+    p = 0;
+    while (s[p]) {
+        if (s[p] == '\n')
+            break;
+        p++;
+    }
+    return (p + 1);
 }
 
-char	*read_line(char *buf)
-{
-	size_t	len;
-	char	*line;
+char *read_line(char *buf) {
+    size_t len;
+    char *line;
 
-	if (!buf)
-		return (NULL);
-	len = endl_index(buf);
-	if (len == 0)
-		return (NULL);
-	line = (char *) malloc(sizeof(char) * (len + 1));
-	line[len] = '\0';
-	if (line)
-	{
-		while (len--)
-			line[len] = buf[len];
-	}
-	return (free(buf), NULL ?: line);
+    if (!buf)
+        return (free(buf), NULL);
+    len = endl_index(buf);
+    if (len == 0)
+        return (free(buf),NULL);
+    line = (char *) malloc(sizeof(char) * (len + 1));
+    if (!line)
+        return (free(buf), NULL);
+    line[len] = '\0';
+    while (len)
+    {
+        len--;
+        line[len] = buf[len];
+    }
+    return (free(buf), line);
 }
 
-char	*get_next_line(int fd)
-{
-    static char	*rem;
-    char    	*line;
-    char		*buf;
-    ssize_t		ret;
+char *get_next_line(int fd) {
+    static char *rem;
+    char *line;
+    char *buf;
+    ssize_t ret;
 
     line = "";
-    buf = (char *) malloc(sizeof(char) * (BUFFER_SIZE + 1));
+    buf = (char *) malloc(sizeof(char) * (size_t)(BUFFER_SIZE + 1));
+    if (!buf)
+        return (NULL);
     if (fd < 0 || read(fd, NULL, 0) < 0 || BUFFER_SIZE <= 0)
         return (free(buf), NULL);
     if (rem)
         line = rem;
     ret = read(fd, buf, BUFFER_SIZE);
-    while (*buf || *line)
-    {
+    while (*buf || *line) {
         buf[ret] = '\0';
-        if ((!ret && !ft_strchr(line, '\n')))
-        {
-            rem = NULL;
-            free(buf);
-            break ;
-        }
         if (ft_strchr(buf, '\n'))
             rem = ft_strchr(buf, '\n') + 1;
-        else
+        else if (ft_strchr(line, '\n'))
             rem = ft_strchr(line, '\n') + 1;
         line = join(line, buf);
-        if (ft_strchr(line, '\n'))
-            break ;
+        if (ft_strchr(line, '\n') || (!ret && !ft_strchr(line, '\n')))
+        {
+            return (read_line(line));
+        }
         ret = read(fd, buf, BUFFER_SIZE);
     }
-    return (read_line(line));
+    free(buf);
+    return (NULL);
 }

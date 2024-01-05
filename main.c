@@ -30,6 +30,8 @@ size_t ft_strlen(const char *s) {
 }
 
 char *ft_strchr(const char *s, int c) {
+    if(!s)
+        return (NULL);
     while (*s) {
         if (*s == (char) c)
             return ((char *) s);
@@ -110,12 +112,6 @@ char	*get_next_line(int fd)
     ret = read(fd, buf, BUFFER_SIZE);
     while (*buf || *line)
     {
-        if ((!ret && !ft_strchr(line, '\n')))
-        {
-            rem = NULL;
-            free(buf);
-            break ;
-        }
         buf[ret] = '\0';
         if (ft_strchr(buf, '\n'))
             rem = ft_strchr(buf, '\n') + 1;
@@ -123,13 +119,12 @@ char	*get_next_line(int fd)
             rem = ft_strchr(line, '\n') + 1;
         line = join(line, buf);
         if (ft_strchr(line, '\n'))
-            break ;
+            return (read_line(line));
         ret = read(fd, buf, BUFFER_SIZE);
+        if ((!ret && !ft_strchr(line, '\n')))
+            return (line);
     }
-    char *realine = read_line(line);
-    if (line)
-        free(line);
-    return (realine);
+    return (NULL);
 }
 
 void leaks() {
