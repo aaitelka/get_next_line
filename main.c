@@ -79,53 +79,59 @@ size_t endl_index(const char *s) {
     return (p + 1);
 }
 
-char *read_line(const char *buf) {
+char *read_line(char *buf) {
     size_t len;
     char *line;
+
     if (!buf)
-        return (NULL);
+        return (free(buf), NULL);
     len = endl_index(buf);
     if (len == 0)
-        return (NULL);
+        return (free(buf),NULL);
     line = (char *) malloc(sizeof(char) * (len + 1));
+    if (!line)
+        return (free(buf), NULL);
     line[len] = '\0';
-    if (line) {
-        while (len--)
-            line[len] = buf[len];
+    while (len)
+    {
+        len--;
+        line[len] = buf[len];
     }
-    return (line);
+    return (free(buf), line);
 }
 
-char	*get_next_line(int fd)
-{
-    static char	*rem;
-    char    	*line;
-    char		*buf;
-    ssize_t		ret;
+char *get_next_line(int fd) {
+    static char *rem;
+    char *line;
+    char *buf;
+    ssize_t ret;
 
     line = "";
-    buf = (char *) malloc(sizeof(char) * BUFFER_SIZE);
+    buf = (char *) malloc(sizeof(char) * (size_t)(BUFFER_SIZE + 1));
+    if (!buf)
+        return (NULL);
     if (fd < 0 || read(fd, NULL, 0) < 0 || BUFFER_SIZE <= 0)
         return (free(buf), NULL);
     if (rem)
         line = rem;
     ret = read(fd, buf, BUFFER_SIZE);
-    while (*buf || *line)
-    {
+    while (*buf || *line) {
         buf[ret] = '\0';
         if (ft_strchr(buf, '\n'))
             rem = ft_strchr(buf, '\n') + 1;
-        else
+        else if (ft_strchr(line, '\n'))
             rem = ft_strchr(line, '\n') + 1;
         line = join(line, buf);
-        if (ft_strchr(line, '\n'))
+        if (ft_strchr(line, '\n') || (!ret && !ft_strchr(line, '\n')))
+        {
             return (read_line(line));
+        }
         ret = read(fd, buf, BUFFER_SIZE);
-        if ((!ret && !ft_strchr(line, '\n')))
-            return (line);
     }
+    free(buf);
     return (NULL);
 }
+
 
 void leaks() {
     system("leaks a.out");
@@ -133,24 +139,12 @@ void leaks() {
 
 int main(void) {
 	atexit(leaks);
-
-//    int fd = open("bootstrap.txt", O_RDONLY);
-    int fd = open("README.md", O_RDONLY);
+    int fd = open("/Users/aaitelka/francinette/tests/get_next_line/fsoares/empty.txt", O_RDONLY);
     int i = 0;
     while (i++ < 1) {
         char *line = get_next_line(fd);
-
-//        write(1, line, endl_index(line));
-//        if (!line)
-//        {
-//            printf("file is empty");
-//            break;
-//        }
 		printf("%s", line);
-//        free(line);
-        //line = NULL;
     }
     close(fd);
-
     return 0;
 }

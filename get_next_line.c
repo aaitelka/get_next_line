@@ -68,7 +68,7 @@ char *get_next_line(int fd) {
         else if (ft_strchr(line, '\n'))
             rem = ft_strchr(line, '\n') + 1;
         line = join(line, buf);
-        if (ft_strchr(line, '\n') || (!ret && !ft_strchr(line, '\n')))
+        if (line && (ft_strchr(line, '\n') || (!ret && !ft_strchr(line, '\n'))))
         {
             return (read_line(line));
         }
