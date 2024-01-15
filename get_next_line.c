@@ -29,8 +29,8 @@ char *read_line(char *buf) {
     size_t len;
     char *line;
 
-    if (!buf)
-        return (free(buf), NULL);
+    if (!buf || *buf == '\0')
+        return (NULL);
     len = endl_index(buf);
     if (len == 0)
         return (free(buf),NULL);
@@ -68,12 +68,12 @@ char *get_next_line(int fd) {
         else if (ft_strchr(line, '\n'))
             rem = ft_strchr(line, '\n') + 1;
         line = join(line, buf);
-        if (line && (ft_strchr(line, '\n') || (!ret && !ft_strchr(line, '\n'))))
+        if (ft_strchr(line, '\n') || (!ret && !ft_strchr(line, '\n')))
         {
             return (read_line(line));
         }
         ret = read(fd, buf, BUFFER_SIZE);
     }
-    free(buf);
+//    free(buf);
     return (NULL);
 }
