@@ -43,16 +43,17 @@ char *read_line(char *buf) {
         len--;
         line[len] = buf[len];
     }
-    return (free(buf), line);
+    return (line);
 }
 
 char *get_next_line(int fd) {
     static char *rem;
     char *line;
+    char *rline = NULL;
     char *buf;
     ssize_t ret;
 
-    line = "";
+    line = NULL;
     buf = (char *) malloc(sizeof(char) * (size_t)(BUFFER_SIZE + 1));
     if (!buf)
         return (NULL);
@@ -70,10 +71,12 @@ char *get_next_line(int fd) {
         line = join(line, buf);
         if (ft_strchr(line, '\n') || (!ret && !ft_strchr(line, '\n')))
         {
-            return (read_line(line));
+            rline = read_line(line);
+            free(line);
+            break;
         }
         ret = read(fd, buf, BUFFER_SIZE);
     }
-//    free(buf);
-    return (NULL);
+    free(buf);
+    return (rline);
 }
