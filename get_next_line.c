@@ -19,13 +19,14 @@ size_t endl_index(const char *s) {
     p = 0;
     while (s[p]) {
         if (s[p] == '\n')
-            break;
+            return (p + 1);
         p++;
     }
-    return (p + 1);
+    return (p);
 }
 
-char *read_line(char *buf) {
+char *read_line(char *buf)
+{
     size_t len;
     char *line;
 
@@ -33,17 +34,37 @@ char *read_line(char *buf) {
         return (NULL);
     len = endl_index(buf);
     if (len == 0)
-        return (free(buf),NULL);
+        return (NULL);
     line = (char *) malloc(sizeof(char) * (len + 1));
     if (!line)
-        return (free(buf), NULL);
+        return (NULL);
     line[len] = '\0';
-    while (len)
-    {
-        len--;
+    while (len--)
         line[len] = buf[len];
-    }
     return (free(buf), line);
+}
+
+char *new_rem(char *rem)
+{
+    char *new_rem;
+    size_t len;
+    size_t i;
+
+    if (!rem)
+        return (NULL);
+    i = -1;
+    rem = ft_strchr(rem, 10) + 1;
+    len = endl_index(rem);
+    if (!len)
+        return (NULL);
+    new_rem = (char *) malloc(len + 1);
+    if (!new_rem)
+        return (NULL);
+    while (len-- && i++)
+        new_rem[i] = rem[i];
+    if (*rem)
+        free(rem);
+    return (new_rem);
 }
 
 char *get_next_line(int fd) {

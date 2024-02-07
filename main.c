@@ -11,139 +11,175 @@
 /* ************************************************************************** */
 
 #include <stdio.h>
+#include <stddef.h>
 #include <unistd.h>
-#include <fcntl.h>
 #include <stdlib.h>
 #include <string.h>
+#include <fcntl.h>
 
 #ifndef BUFFER_SIZE
-# define BUFFER_SIZE 1
+# define BUFFER_SIZE 42
 #endif
 
-size_t ft_strlen(const char *s) {
+#define NL 10
+
+size_t ft_strlen(char *s)
+{
     size_t len;
 
+    if (!s)
+        return (0);
     len = 0;
-    while (s[len])
+    while (s[len] != '\0')
         len++;
     return (len);
 }
 
-char *ft_strchr(const char *s, int c) {
-    if(!s)
+char *ft_strchr(char *s, int c)
+{
+    if (!s)
         return (NULL);
-    while (*s) {
-        if (*s == (char) c)
-            return ((char *) s);
+    while (*s && *s != (char)c)
         s++;
-    }
-    if (!(char) c)
-        return ((char *) s);
+    if (*s == (char)c)
+        return (char *)s;
     return (NULL);
 }
 
-char *join(char const *s1, char const *s2) {
+char *join(char *s1, char *s2)
+{
     char *str;
     size_t s1len;
     size_t s2len;
-    size_t dstlen;
+    size_t i;
 
-    if (!s1 || !s2)
+    if (!s1 && !s2)
         return (NULL);
+    if (!s1)
+        return (s2);
     s1len = ft_strlen(s1);
     s2len = ft_strlen(s2);
-    dstlen = s1len + s2len;
-    str = (char *) malloc(sizeof(char) * (dstlen + 1));
-    if (str) {
-        while ((*s1 || *s2) && dstlen--) {
-            if (*s1)
-                *str++ = *s1++;
-            else
-                *str++ = *s2++;
-        }
-        *str = '\0';
-        str -= (s1len + s2len);
-    }
+    str = (char *) malloc(sizeof(char) * (s1len + s2len + 1));
+    if (!str)
+        return (NULL);
+    i = -1;
+    while (s1[++i])
+        str[i] = s1[i];
+    int     j = -1;
+    while (s2[++j])
+        str[i++] = s2[j];
+    str[i] = '\0';
     return (str);
 }
 
-size_t endl_index(const char *s) {
-    size_t p;
+ssize_t line_length(char *line)
+{
+    ssize_t length;
 
-    p = 0;
-    while (s[p]) {
-        if (s[p] == '\n')
-            break;
-        p++;
-    }
-    return (p + 1);
-}
-
-char *read_line(char *buf) {
-    size_t len;
-    char *line;
-
-    if (!buf)
-        return (free(buf), NULL);
-    len = endl_index(buf);
-    if (len == 0)
-        return (free(buf),NULL);
-    line = (char *) malloc(sizeof(char) * (len + 1));
     if (!line)
-        return (free(buf), NULL);
-    line[len] = '\0';
-    while (len)
+        return (0);
+    length = 0;
+    while (line[length])
     {
-        len--;
-        line[len] = buf[len];
+        length++;
+        if (line[length] == NL)
+            break;
     }
-    return (free(buf), line);
+    return (length);
 }
 
-char *get_next_line(int fd) {
-    static char *rem;
-    char *line;
-    char *buf;
-    ssize_t ret;
 
-    line = "";
-    buf = (char *) malloc(sizeof(char) * (size_t)(BUFFER_SIZE + 1));
-    if (!buf)
+char *read_line(char *buffer)
+{
+    char    *real_line;
+    ssize_t length;
+
+    length = line_length(buffer) + 1;
+    real_line = (char *) malloc(length + 1);
+    if (!real_line)
         return (NULL);
-    if (fd < 0 || read(fd, NULL, 0) < 0 || BUFFER_SIZE <= 0)
-        return (free(buf), NULL);
-    if (rem)
-        line = rem;
-    ret = read(fd, buf, BUFFER_SIZE);
-    while (*buf || *line) {
-        buf[ret] = '\0';
-        if (ft_strchr(buf, '\n'))
-            rem = ft_strchr(buf, '\n') + 1;
-        else if (ft_strchr(line, '\n'))
-            rem = ft_strchr(line, '\n') + 1;
-        line = join(line, buf);
-        if (ft_strchr(line, '\n') || (!ret && !ft_strchr(line, '\n')))
-        {
-            return (read_line(line));
-        }
-        ret = read(fd, buf, BUFFER_SIZE);
-    }
-    free(buf);
-    return (NULL);
+    real_line[length] = '\0';
+    while (length--)
+        real_line[length] = buffer[length];
+    return (real_line);
 }
 
+char *save_rem(char *buffer)
+{
+    char    *remainder;
+    ssize_t rem_len;
+
+    if (!buffer || !buffer[0])
+        return (NULL);
+    buffer = strchr(buffer, NL);
+    rem_len = line_length(buffer) + 1;
+    remainder = (char *) malloc(rem_len + 1);
+    if (!remainder)
+        return (NULL);
+    remainder[rem_len] = '\0';
+    buffer++;
+    while (rem_len--)
+        remainder[rem_len] = buffer[rem_len];
+    return (remainder);
+}
+
+// char	*read_file(int fd, char *res)
+// {
+//     char	*buffer;
+//     int		byte_read;
+
+//     buffer = calloc(BUFFER_SIZE + 1, sizeof(char));
+//     if (!buffer)
+//         return (NULL);
+//     while ((byte_read = read(fd, buffer, BUFFER_SIZE)) > 0)
+//     {
+//         if (byte_read == -1)
+//             return (NULL);
+//         buffer[byte_read] = 0;
+//         res = join(res, buffer);
+//         if (ft_strchr(buffer, '\n'))
+//             break ;
+//     }
+//     return (res);
+// }
+
+char *get_next_line(int fd)
+{
+    static char	*buffer;
+    char		*line;
+    int         byte_read;
+
+    if (fd < 0 || BUFFER_SIZE <= 0 || read(fd, 0, 0) < 0)
+        return (NULL);
+    buffer = calloc(BUFFER_SIZE + 1, sizeof(char));
+    if (!buffer)
+        return (NULL);
+    while ((byte_read = read(fd, buffer, BUFFER_SIZE)) > 0)
+    {
+        if (byte_read <= 0)
+            return (NULL);
+        buffer[byte_read] = 0;
+        line = join(line, buffer);
+        if (ft_strchr(buffer, '\n'))
+            break ;
+    }
+    line = read_line(buffer);
+    buffer = save_rem(buffer);
+    return (line);
+}
 
 void leaks() {
     system("leaks a.out");
 }
 
 int main(void) {
-	atexit(leaks);
-    int fd = open("/Users/aaitelka/francinette/tests/get_next_line/fsoares/empty.txt", O_RDONLY);
+    atexit(leaks);
+    int fd = open("/Users/aaitelka/francinette/tests/get_next_line/fsoares/1char.txt", O_RDONLY);
     int i = 0;
     while (i++ < 1) {
         char *line = get_next_line(fd);
-		printf("%s", line);
+        printf("%s", line);
+        free(line);
     }
     close(fd);
     return 0;

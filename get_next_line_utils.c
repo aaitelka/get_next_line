@@ -12,7 +12,8 @@
 
 #include "get_next_line.h"
 
-size_t ft_strlen(const char *s) {
+size_t ft_strlen(const char *s)
+{
     size_t len;
 
     len = 0;
@@ -21,7 +22,8 @@ size_t ft_strlen(const char *s) {
     return (len);
 }
 
-char *ft_strchr(const char *s, int c) {
+char *ft_strchr(const char *s, int c)
+{
     while (*s) {
         if (*s == (char) c)
             return ((char *) s);
@@ -32,27 +34,25 @@ char *ft_strchr(const char *s, int c) {
     return (NULL);
 }
 
-char *join(char const *s1, char const *s2) {
-    char *str;
-    size_t s1len;
-    size_t s2len;
-    size_t dstlen;
+char *join(char const *s1, char const *s2)
+{
+    char	*str;
+    size_t	i;
+    size_t	j;
 
-    if (!s1 || !s2)
+    if (!s1 && !s2)
         return (NULL);
-    s1len = ft_strlen(s1);
-    s2len = ft_strlen(s2);
-    dstlen = s1len + s2len;
-    str = (char *) malloc(sizeof(char) * (size_t)(dstlen + 1));
+    str = malloc((ft_strlen(s1) + ft_strlen(s2)) + 1);
     if (!str)
         return (NULL);
-    while ((*s1 || *s2) && dstlen--) {
-        if (*s1)
-            *str++ = *s1++;
-        else
-            *str++ = *s2++;
-    }
-    *str = '\0';
-    str -= (s1len + s2len);
+    i = -1;
+    while (s1[++i])
+        str[i] = s1[i];
+    j = -1;
+    while (s2[++j])
+        str[i++] = s2[j];
+    str[i] = '\0';
+    if (*s1)
+        free((char *)s1);
     return (str);
 }
