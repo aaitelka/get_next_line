@@ -102,24 +102,6 @@ char *new_rem(char *rem)
     return (new_rem);
 }
 
-char *read_line(char *buf) {
-    size_t len;
-    char *line;
-
-    if (!buf || *buf == '\0')
-        return (NULL);
-    len = endl_index(buf);
-    if (!len)
-        return (NULL);
-    line = (char *) malloc(len + 1);
-    if (!line)
-        return (NULL);
-    line[len] = '\0';
-    while (len--)
-        line[len] = buf[len];
-    return (line);
-}
-
 char	*read_file(int fd, char *res)
 {
     char	*buffer;
