@@ -67,69 +67,54 @@ char *join(char const *s1, char const *s2) {
     return (str);
 }
 
-size_t endl_index(const char *s) {
-    size_t p;
+char *read_line_or_save_rem(char *buffer, bool is_line)
+{
+    char    *result;
+    size_t  len;
 
-    p = 0;
-    while (s[p]) {
-        if (s[p] == '\n')
-            break;
-        p++;
+    len = 0;
+    if (is_line)
+        while (buffer[len] && buffer[len] != '\n') //count length of line
+            len++;
+    else {
+        if (ft_strchr(buffer, 10))
+            buffer = ft_strchr(buffer, '\n') + 1;
+        len = ft_strlen(buffer);
     }
-    return (p + 1);
+    len++; // add one to include NL character
+    result = (char *) malloc(sizeof(char) * (len + 1));
+    if (!result)
+        return (NULL);
+    result[len] = '\0';
+    while (len--)
+        result[len] = buffer[len];
+    return (result);
 }
 
-char *read_line(char *buf) {
-    size_t len;
-    char *line;
-
-    if (!buf)
-        return (free(buf), NULL);
-    len = endl_index(buf);
-    if (len == 0)
-        return (free(buf),NULL);
-    line = (char *) malloc(sizeof(char) * (len + 1));
-    if (!line)
-        return (free(buf), NULL);
-    line[len] = '\0';
-    while (len)
-    {
-        len--;
-        line[len] = buf[len];
-    }
-    return (free(buf), line);
-}
-
-char *get_next_line(int fd) {
+char *get_next_line(int fd)
+{
     static char *rem;
+    char *buffer;
     char *line;
-    char *buf;
     ssize_t ret;
 
     line = "";
-    buf = (char *) malloc(sizeof(char) * (size_t)(BUFFER_SIZE + 1));
-    if (!buf)
-        return (NULL);
-    if (fd < 0 || read(fd, NULL, 0) < 0 || BUFFER_SIZE <= 0)
-        return (free(buf), NULL);
-    if (rem)
-        line = rem;
-    ret = read(fd, buf, BUFFER_SIZE);
-    while (*buf || *line) {
-        buf[ret] = '\0';
-        if (ft_strchr(buf, '\n'))
-            rem = ft_strchr(buf, '\n') + 1;
-        else if (ft_strchr(line, '\n'))
-            rem = ft_strchr(line, '\n') + 1;
-        line = join(line, buf);
-        if (ft_strchr(line, '\n') || (!ret && !ft_strchr(line, '\n')))
-        {
-            return (read_line(line));
-        }
-        ret = read(fd, buf, BUFFER_SIZE);
+    buffer = malloc(BUFFER_SIZE + 1);
+    while ((ret = read(fd, buffer, BUFFER_SIZE)) > 0) {
+        buffer[ret] = '\0';
+        line = join(line, buffer);
+        if (ft_strchr(line, 10))
+            break;
     }
-    free(buf);
-    return (NULL);
+    if (rem)
+        line = join(rem, line);
+    if (ft_strchr(line, 10))
+        rem = read_line_or_save_rem(line, false); //remainder
+    else
+        rem = NULL;
+    line = read_line_or_save_rem(line, true);   //real line
+    free(buffer);
+    return (line);
 }
 
 
