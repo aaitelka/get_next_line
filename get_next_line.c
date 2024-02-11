@@ -91,6 +91,7 @@ char *get_next_line(int fd) {
         line = join(line, buf);
         if (ft_strchr(line, '\n') || (!ret && !ft_strchr(line, '\n')))
         {
+            free(buf);
             return (read_line(line));
         }
         ret = read(fd, buf, BUFFER_SIZE);
