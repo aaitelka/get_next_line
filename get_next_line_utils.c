@@ -19,7 +19,7 @@ size_t ft_strlen(char *s) {
     if (!s)
         return (0);
     len = 0;
-    while (s[len] != '\0')
+    while (s[len])
         len++;
     return (len);
 }
@@ -62,7 +62,7 @@ char *join(char *s1, char *s2) {
         return (strdup(s2));
     if (!s2)
         return (strdup(s1));
-    str = malloc(ft_strlen(s1) + ft_strlen(s2) + 1);
+    str = calloc(ft_strlen(s1) + ft_strlen(s2) + 1, 1);
     if (!str)
         return (NULL);
     i = -1;

@@ -13,10 +13,9 @@
 #include "get_next_line.h"
 #include <string.h>
 
-char *read_line(char *buffer)
-{
-    char    *line;
-    size_t  len;
+char *read_line(char *buffer) {
+    char *line;
+    size_t len;
 
     len = 0;
     while (buffer[len] && buffer[len] != '\n')  //count length of line
@@ -35,10 +34,9 @@ char *read_line(char *buffer)
     return (line);
 }
 
-char *save_rem(char *buffer)
-{
-    char    *reminder;
-    size_t  len;
+char *save_rem(char *buffer) {
+    char *reminder;
+    size_t len;
 
     if (!buffer)    // if buffer is NULL, return NULL
         return (free(buffer), buffer = NULL, NULL);
@@ -56,19 +54,21 @@ char *save_rem(char *buffer)
     return (reminder);
 }
 
-char *read_at_nl(int fd)
-{
-    char        *buffer;
-    char        *line;
-    ssize_t     ret;
+char *read_at_nl(int fd) {
+    char *buffer;
+    char *line;
+    ssize_t ret;
 
-    buffer  = NULL;
+    buffer = NULL;
     line = NULL;
-    buffer = malloc(BUFFER_SIZE + 1);
+    buffer = calloc(BUFFER_SIZE + 1, 1);
     if (!buffer)
         return (NULL);
-    while ((ret = read(fd, buffer, BUFFER_SIZE)) > 0)
-    {
+    ret = 1;
+    while (ret > 0) {
+        ret = read(fd, buffer, BUFFER_SIZE);
+        if (ret == -1)
+            return (free(buffer), NULL);
         buffer[ret] = '\0';
         line = join(line, buffer);
         if (ft_strchr(line, 10))
@@ -78,14 +78,16 @@ char *read_at_nl(int fd)
     return (line);
 }
 
-char *get_next_line(int fd)
-{
+char *get_next_line(int fd) {
     static char *reminder;
-    char        *line;
+    char *line;
 
+    line = NULL;
     if (fd < 0 || read(fd, NULL, 0) < 0 || BUFFER_SIZE <= 0)
-        return (NULL);
+        return (reminder = NULL, NULL);
     line = read_at_nl(fd);
+    if (!line)
+        return (free(reminder), NULL);
     if (reminder)
         line = join(reminder, line);
     reminder = save_rem(line);
