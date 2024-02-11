@@ -27,16 +27,17 @@ void ft_putstr(char *str)
 
 int main(void) {
 
-    //atexit(leaks);
+    atexit(leaks);
     int fd = open("t", O_RDONLY);
     char *line;
-    while (1) {
+    int i = 0;
+
+    while (i++ < 6)
+    {
         line = get_next_line(fd);
         if (!line)
             break ;
         ft_putstr(line);
-        write(1,"\n", 1);
-        ft_putstr("___________");
         free(line);
     }
     close(fd);

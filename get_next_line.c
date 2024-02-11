@@ -11,10 +11,11 @@
 /* ************************************************************************** */
 
 #include "get_next_line.h"
+#include <string.h>
 
 char *read_line(char *buffer)
 {
-    char    *result;
+    char    *line;
     size_t  len;
 
     len = 0;
@@ -24,49 +25,48 @@ char *read_line(char *buffer)
             len++;                              // add one to include NL character
     if (!len)
         return (NULL);
-    result = malloc(len + 1);
-    if (!result)
+    line = malloc(len + 1);
+    if (!line)
         return (free(buffer), NULL);
-    result[len] = '\0';
+    line[len] = '\0';
     while (len--)
-        result[len] = buffer[len];
+        line[len] = buffer[len];
     free(buffer);
-    return (result);
+    return (line);
 }
 
 char *save_rem(char *buffer)
 {
-    char    *result;
+    char    *reminder;
     size_t  len;
 
+    if (!buffer)    // if buffer is NULL, return NULL
+        return (free(buffer), buffer = NULL, NULL);
     if (ft_strchr(buffer, 10))
         buffer = ft_strchr(buffer, '\n') + 1;
     len = ft_strlen(buffer);
     if (!len)
         return (NULL);
-    result = malloc(len + 1);
-    if (!result)
-        return (free(buffer), NULL);
-    result[len] = '\0';
+    reminder = calloc(len + 1, 1);
+    if (!reminder)
+        return (NULL);
+    reminder[len] = '\0';
     while (len--)
-        result[len] = buffer[len];
-    //free(buffer);
-    return (result);
+        reminder[len] = buffer[len];
+    return (reminder);
 }
 
-char *get_next_line(int fd)
+char *read_at_nl(int fd)
 {
-    static char *reminder;
     char        *buffer;
     char        *line;
     ssize_t     ret;
 
-    if (fd < 0 || read(fd, NULL, 0) < 0 || BUFFER_SIZE <= 0)
-        return (NULL);
+    buffer  = NULL;
     line = NULL;
     buffer = malloc(BUFFER_SIZE + 1);
     if (!buffer)
-        return (free(reminder), NULL);
+        return (NULL);
     while ((ret = read(fd, buffer, BUFFER_SIZE)) > 0)
     {
         buffer[ret] = '\0';
@@ -74,11 +74,24 @@ char *get_next_line(int fd)
         if (ft_strchr(line, 10))
             break;
     }
+    free(buffer);
+    return (line);
+}
+
+char *get_next_line(int fd)
+{
+    static char *reminder;
+    char        *line;
+
+    if (fd < 0 || read(fd, NULL, 0) < 0 || BUFFER_SIZE <= 0)
+        return (NULL);
+    line = read_at_nl(fd);
     if (reminder)
         line = join(reminder, line);
-    if (ft_strchr(line, 10))
-        reminder = save_rem(line); //remainder
+    reminder = save_rem(line);
+   if (!ft_strchr(line, 10))
+       reminder = NULL;
     if (line)
-        line = read_line(line);   //real line
-    return (free(buffer), line);
+        line = read_line(line);
+    return (line);
 }
