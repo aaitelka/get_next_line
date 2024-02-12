@@ -1,16 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   get_next_line.c                                   :+:      :+:    :+:   */
+/*   get_next_line_bonus.c                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: aaitelka <aaitelka@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/23 10:02:52 by aaitelka          #+#    #+#             */
-/*   Updated: 2024/02/12 23:20:05 by aaitelka         ###   ########.fr       */
+/*   Updated: 2024/02/12 23:30:32 by aaitelka         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "get_next_line.h"
+#include "get_next_line_bonus.h"
 
 char	*read_line(char *buffer)
 {
@@ -80,16 +80,16 @@ void	read_at_nl(int fd, char **line)
 
 char	*get_next_line(int fd)
 {
-	static char	*reminder;
+	static char *reminder[OPEN_MAX];
 	char		*line;
 
-	if (BUFFER_SIZE <= 0)
+	if (BUFFER_SIZE <= 0 || fd < 0 || fd >= OPEN_MAX)
 		return (NULL);
-	line = reminder;
-	reminder = NULL;
+	line = reminder[fd];
+	reminder[fd] = NULL;
 	read_at_nl(fd, &line);
 	if (ft_strchr(line, 10))
-		reminder = save_rem(line);
+		reminder[fd] = save_rem(line);
 	if (!line)
 		return (NULL);
 	return (read_line(line));
