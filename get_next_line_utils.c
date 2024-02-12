@@ -34,35 +34,34 @@ char *ft_strchr(char *s, int c) {
     return (NULL);
 }
 
-char *ft_strdup(char *src) {
-    char *new;
-    int i;
-    int size;
+char	*ft_strdup(char *s1)
+{
+    size_t	len;
+    char	*str;
 
-    size = 0;
-    while (src[size])
-        size++;
-    if (!(new = malloc(sizeof(char) * (size + 1))))
+    if (!s1 || !*s1)
         return (NULL);
-    i = 0;
-    while (src[i]) {
-        new[i] = src[i];
-        i++;
-    }
-    new[i] = '\0';
-    return (new);
+    len = ft_strlen(s1);
+    str = malloc(len + 1);
+    if (!str)
+        return (NULL);
+    str[len] = '\0';
+    while (len--)
+        str[len] = s1[len];
+    return (str);
 }
 
-char *join(char *s1, char *s2) {
+char *join(char *s1, char *s2)
+{
     char *str;
     size_t i;
     size_t j;
 
     if (!s1)
-        return (strdup(s2));
+        return (ft_strdup(s2));
     if (!s2)
-        return (strdup(s1));
-    str = calloc(ft_strlen(s1) + ft_strlen(s2) + 1, 1);
+        return (ft_strdup(s1));
+    str = malloc(ft_strlen(s1) + ft_strlen(s2) + 1);
     if (!str)
         return (NULL);
     i = -1;

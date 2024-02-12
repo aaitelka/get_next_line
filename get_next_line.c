@@ -34,66 +34,61 @@ char *read_line(char *buffer) {
     return (line);
 }
 
-char *save_rem(char *buffer) {
-    char *reminder;
+char *save_rem(char *reminder, char *line) {
     size_t len;
 
-    if (!buffer)    // if buffer is NULL, return NULL
-        return (free(buffer), buffer = NULL, NULL);
-    if (ft_strchr(buffer, 10))
-        buffer = ft_strchr(buffer, '\n') + 1;
-    len = ft_strlen(buffer);
+    if (!line)
+        return (NULL);
+    line = ft_strchr(line, '\n') + 1;
+    len = ft_strlen(line);
     if (!len)
         return (NULL);
-    reminder = calloc(len + 1, 1);
+    reminder = malloc(len + 1);
     if (!reminder)
-        return (NULL);
+        return (free(line), NULL);
     reminder[len] = '\0';
     while (len--)
-        reminder[len] = buffer[len];
+        reminder[len] = line[len];
     return (reminder);
 }
 
-char *read_at_nl(int fd) {
+void read_at_nl(int fd, char **line)
+{
+    static char *reminder;
     char *buffer;
-    char *line;
-    ssize_t ret;
 
-    buffer = NULL;
-    line = NULL;
-    buffer = calloc(BUFFER_SIZE + 1, 1);
+    ssize_t ret;
+    buffer = malloc(BUFFER_SIZE + 1);
     if (!buffer)
-        return (NULL);
+        return;
+    *line = reminder;
+    reminder = NULL;
     ret = 1;
     while (ret > 0) {
         ret = read(fd, buffer, BUFFER_SIZE);
-        if (ret == -1)
-            return (free(buffer), NULL);
+        if (ret == -1) {
+            free(buffer);
+            reminder = NULL;
+            return;
+        }
         buffer[ret] = '\0';
-        line = join(line, buffer);
-        if (ft_strchr(line, 10))
+        *line = join(*line, buffer);
+        if (ft_strchr(*line, 10))
             break;
     }
+    if (ft_strchr(*line, 10))
+        reminder = save_rem(reminder, *line);
     free(buffer);
-    return (line);
 }
 
-char *get_next_line(int fd) {
-    static char *reminder;
+char *get_next_line(int fd)
+{
     char *line;
 
-    line = NULL;
     if (fd < 0 || read(fd, NULL, 0) < 0 || BUFFER_SIZE <= 0)
-        return (reminder = NULL, NULL);
-    line = read_at_nl(fd);
+        return (NULL);
+    read_at_nl(fd, &line);
     if (!line)
-        return (free(reminder), NULL);
-    if (reminder)
-        line = join(reminder, line);
-    reminder = save_rem(line);
-    if (!ft_strchr(line, 10))
-        reminder = NULL;
-    if (line)
-        line = read_line(line);
-    return (line);
+        return (NULL);
+    return (read_line(line));
 }
